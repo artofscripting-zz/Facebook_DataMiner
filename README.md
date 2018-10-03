@@ -1,9 +1,8 @@
 # Facebook Authenticated data automation
 ##### Based on selenium-friends-scraper-master
+
 #### The Java application is original and BSD.
-
-
-# The java code is to help transform the "json" files into SQL, Flare for D3 and 3D visualization and NoSQL use.
+##### The java code is to help transform the "json" files into SQL, Flare for D3 and 3D visualization and NoSQL use.
 
 ### Usage
 The current version is written using Selenium's Firefox web driver, which means you need Firefox installed. 
