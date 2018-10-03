@@ -1,0 +1,166 @@
+<head>
+    <script src="//unpkg.com/3d-force-graph@1"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/qwest/4.4.5/qwest.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/PapaParse/4.1.4/papaparse.min.js"></script>
+
+    <script >
+	function getGraphDataSets() {
+
+    const loadMiserables = function(Graph) {
+        Graph
+            .cooldownTicks(20000)
+			.cooldownTime(600000)
+            .nodeLabel('id')
+            .nodeAutoColorBy('group')
+            .forceEngine('ngraph')
+            .jsonUrl('Friends5.json');
+    };
+    loadMiserables.description = "<em>Les Miserables</em> data (<a href='https://bl.ocks.org/mbostock/4062045'>4062045</a>)";
+
+    //
+
+    const loadBlocks = function(Graph) {
+        qwest.get('.blocks.json').then((_, data) => {
+            data.nodes.forEach(node => { node.name = `${node.user?node.user+': ':''}${node.description || node.id}` });
+
+            Graph
+                .cooldownTicks(3000)
+                .cooldownTime(60000)
+                .nodeAutoColorBy('user')
+                .forceEngine('ngraph')
+                .graphData(data);
+        });
+    };
+    loadBlocks.description = "<em>Blocks</em> data (<a href='https://bl.ocks.org/mbostock/afecf1ce04644ad9036ca146d2084895'>afecf1ce04644ad9036ca146d2084895</a>)";
+
+    //
+
+    const loadD3Dependencies = function(Graph) {
+        qwest.get('.d3.csv').then((_, csvData) => {
+            const { data: [, ...data] } = Papa.parse(csvData); // Parse csv
+            data.pop(); // Remove last empty row
+
+            const nodes = [], links = [];
+            data.forEach(([size, path]) => {
+                const levels = path.split('/'),
+                    module = levels.length > 1 ? levels[1] : null,
+                    leaf = levels.pop(),
+                    parent = levels.join('/');
+
+                nodes.push({
+                    path,
+                    leaf,
+                    module,
+                    size: +size || 1
+                });
+
+                if (parent) {
+                    links.push({ source: parent, target: path});
+                }
+            });
+
+            Graph
+                .cooldownTicks(300)
+                .nodeRelSize(0.5)
+                .nodeId('id')
+                .nodeVal('size')
+                .nodeLabel('id')
+                .nodeAutoColorBy('module')
+                .forceEngine('ngraph')
+                .graphData({ nodes: nodes, links: links });
+        });
+    };
+    loadD3Dependencies.description = "<em>D3 dependencies</em> data (<a href='https://bl.ocks.org/mbostock/9a8124ccde3a4e9625bc413b48f14b30'>9a8124ccde3a4e9625bc413b48f14b30</a>)";
+
+    const tunnel = function(Graph) {
+
+        const perimeter = 12, length = 30;
+
+        const getId = (col, row) => `${col},${row}`;
+
+        let nodes = [], links = [];
+        for (let colIdx=0; colIdx<perimeter; colIdx++) {
+            for (let rowIdx=0; rowIdx<length; rowIdx++) {
+                const id = getId(colIdx, rowIdx);
+                nodes.push({id});
+
+                // Link vertically
+                if (rowIdx>0) {
+                    links.push({ source: getId(colIdx, rowIdx-1), target: id });
+                }
+
+                // Link horizontally
+                links.push({ source: getId((colIdx || perimeter) - 1, rowIdx), target: id });
+            }
+        }
+
+        Graph
+            .cooldownTicks(300)
+            .forceEngine('ngraph')
+            .graphData({ nodes: nodes, links: links });
+    };
+    tunnel.description = "fabric data for a cylindrical tunnel shape";
+
+    //
+
+    return [loadMiserables, loadBlocks, loadD3Dependencies, tunnel];
+}
+	</script>
+
+   <style>
+   body {
+    text-align: center;
+    font-family: Sans-serif;
+    margin: 0;
+}
+
+.graph-data {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    padding: 5px;
+}
+
+.toggle-data-btn {
+    cursor: pointer;
+    opacity: 0.85;
+}
+
+.toggle-data-btn:hover {
+    opacity: 1;
+}
+
+#graph-data-description {
+    font-size: 12px;
+    color: slategrey;
+}
+   </style>
+</head>
+
+<body>
+    <div id="3d-graph"></div>
+
+    <div class="graph-data">
+        <span id="graph-data-description"></span>
+        <button class="toggle-data-btn" onClick="toggleData()">Show me something else</button>
+    </div>
+
+    <script>
+	const Graph = ForceGraph3D()
+	(document.getElementById("3d-graph"));
+
+let curDataSetIdx;
+const dataSets = getGraphDataSets();
+
+let toggleData;
+(toggleData = function() {
+	curDataSetIdx = curDataSetIdx === undefined ? 0 : (curDataSetIdx+1)%dataSets.length;
+	const dataSet = dataSets[curDataSetIdx];
+
+	Graph.resetProps(); // Wipe current state
+	dataSet(Graph); // Load data set
+
+	document.getElementById('graph-data-description').innerHTML = dataSet.description ? `Viewing ${dataSet.description}` : '';
+})(); // IIFE init
+	</script>
+</body>

@@ -1,0 +1,8 @@
+*.json
+dist
+build
+geckodriver.exe
+geckodriver.log
+setup.py
+setupWin.py
+fb.pyc
