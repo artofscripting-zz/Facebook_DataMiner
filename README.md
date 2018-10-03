@@ -1,4 +1,4 @@
-# Facebook data mine
+# Facebook Authenticated data automation
 #Based on selenium-friends-scraper-master
 #The Java application is origial and BSD.
 
