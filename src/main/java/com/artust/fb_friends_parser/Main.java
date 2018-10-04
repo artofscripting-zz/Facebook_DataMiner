@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  */
 public class Main {
 
-    public static String dataFolder = "C:\\Users\\Art\\Desktop\\selenium-friends-scraper-master\\dist\\main\\data";
+    public static String dataFolder = "data";
 public static MysqlConnector ms = new MysqlConnector();
 public static  List sqls = new ArrayList();
          

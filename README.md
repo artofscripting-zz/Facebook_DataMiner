@@ -4,6 +4,8 @@
 #### The Java application is original and BSD.
 ##### The java code is to help transform the "json" files into SQL, Flare for D3 and 3D visualization and NoSQL use.
 
+![](socialMedia.gif)
+
 ### Usage
 The current version is written using Selenium's Firefox web driver, which means you need Firefox installed. 
 Each user will have a file with a JSON Array that contains self and self relationship and others. 
